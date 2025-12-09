@@ -22,6 +22,8 @@ export default function Home() {
   const [expression, setExpression] = useState('')
   const [result, setResult] = useState<MappingResult | null>(null)
   const [loading, setLoading] = useState(false)
+  const [jsonInput, setJsonInput] = useState('')
+  const [inputMode, setInputMode] = useState<'fields' | 'json'>('fields')
 
   const handleCheckMapping = async () => {
     if (!expression.trim()) {
@@ -36,15 +38,49 @@ export default function Home() {
     setResult(null)
 
     try {
+      const requestBody: any = { expression }
+
+      if (inputMode === 'json') {
+        // Parse JSON input
+        if (!jsonInput.trim()) {
+          setResult({
+            success: false,
+            error: 'Please enter JSON data'
+          })
+          setLoading(false)
+          return
+        }
+
+        try {
+          const parsedData = JSON.parse(jsonInput.trim())
+          if (typeof parsedData !== 'object' || Array.isArray(parsedData)) {
+            setResult({
+              success: false,
+              error: 'JSON data must be an object (e.g., {"flag": [1, 0, 1, 1]})'
+            })
+            setLoading(false)
+            return
+          }
+          requestBody.data = parsedData
+        } catch (parseError) {
+          setResult({
+            success: false,
+            error: `Invalid JSON format: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`
+          })
+          setLoading(false)
+          return
+        }
+      } else {
+        // Use field mappings
+        requestBody.mappings = mappings.filter(m => m.fieldName.trim() && m.inputValue.trim())
+      }
+
       const response = await fetch('/api/check-mapping', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          expression,
-          mappings: mappings.filter(m => m.fieldName.trim() && m.inputValue.trim())
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       const data = await response.json()
@@ -83,7 +119,14 @@ export default function Home() {
           />
         </div>
 
-        <MappingInput mappings={mappings} setMappings={setMappings} />
+        <MappingInput 
+          mappings={mappings} 
+          setMappings={setMappings}
+          jsonInput={jsonInput}
+          setJsonInput={setJsonInput}
+          inputMode={inputMode}
+          setInputMode={setInputMode}
+        />
 
         <div className="flex justify-center mb-6">
           <button
