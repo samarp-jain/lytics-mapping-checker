@@ -86,7 +86,7 @@ export default function MappingInput({
       <p className="mb-2 font-semibold">Multiple Objects Format:</p>
       <p className="mb-2">If sending data in multiple objects, send it in array format:</p>
       <code className="block bg-gray-800 dark:bg-gray-900 p-2 rounded mb-2 text-xs whitespace-pre-wrap break-all">
-        {`[{"flag": [1,0,1,1]}, {"name": "test"}]`}
+        {`{"flag": [1,0,1,1]}`}
       </code>
       <p className="mb-2">Or in the JSON format as given:</p>
       <code className="block bg-gray-800 dark:bg-gray-900 p-2 rounded text-xs whitespace-pre-wrap break-all">
